@@ -1,0 +1,22 @@
+# Sensitive files - DO NOT COMMIT
+google-services.json
+*.keystore
+*.jks
+local.properties
+.env
+.env.*
+
+# Firebase credentials
+firebase-adminsdk*.json
+serviceAccountKey.json
+
+# Build outputs
+build/
+*.apk
+*.aab
+
+# IDE files
+.idea/
+*.iml
+.DS_Store
+node_modules/
