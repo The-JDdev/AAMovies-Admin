@@ -12,6 +12,7 @@ import com.bumptech.glide.Glide
 
 class AdminMovieAdapter(
     private var movies: List<Movie>,
+    private val onEditClick: (Movie) -> Unit,
     private val onDeleteClick: (Movie) -> Unit
 ) : RecyclerView.Adapter<AdminMovieAdapter.ViewHolder>() {
 
@@ -19,6 +20,9 @@ class AdminMovieAdapter(
         val poster: ImageView = itemView.findViewById(R.id.img_admin_movie_poster)
         val title: TextView = itemView.findViewById(R.id.tv_admin_movie_title)
         val meta: TextView = itemView.findViewById(R.id.tv_admin_movie_meta)
+        val trendingBadge: TextView = itemView.findViewById(R.id.tv_admin_trending_badge)
+        val pinnedBadge: TextView = itemView.findViewById(R.id.tv_admin_pinned_badge)
+        val btnEdit: TextView = itemView.findViewById(R.id.btn_admin_edit)
         val btnDelete: TextView = itemView.findViewById(R.id.btn_admin_delete)
     }
 
@@ -37,11 +41,18 @@ class AdminMovieAdapter(
                 if (isNotEmpty()) append(" · ")
                 append(movie.category)
             }
+            if (movie.type.isNotEmpty()) {
+                if (isNotEmpty()) append(" · ")
+                append(movie.type)
+            }
             if (movie.language.isNotEmpty()) {
                 if (isNotEmpty()) append(" · ")
                 append(movie.language)
             }
         }
+        holder.trendingBadge.visibility = if (movie.trending) View.VISIBLE else View.GONE
+        holder.pinnedBadge.visibility = if (movie.pinned) View.VISIBLE else View.GONE
+
         if (movie.poster.isNotEmpty()) {
             Glide.with(holder.poster.context)
                 .load(movie.poster)
@@ -52,6 +63,7 @@ class AdminMovieAdapter(
         } else {
             holder.poster.setImageResource(R.drawable.placeholder_admin)
         }
+        holder.btnEdit.setOnClickListener { onEditClick(movie) }
         holder.btnDelete.setOnClickListener { onDeleteClick(movie) }
     }
 

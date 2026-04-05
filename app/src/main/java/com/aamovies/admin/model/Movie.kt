@@ -15,8 +15,15 @@ data class Movie(
     @get:PropertyName("description") @set:PropertyName("description") var description: String = "",
     @get:PropertyName("createdAt") @set:PropertyName("createdAt") var createdAt: Long = 0L,
     @get:PropertyName("trending") @set:PropertyName("trending") var trending: Boolean = false,
+    @get:PropertyName("pinned") @set:PropertyName("pinned") var pinned: Boolean = false,
+    @get:PropertyName("type") @set:PropertyName("type") var type: String = "Movie",
+    @get:PropertyName("genre") @set:PropertyName("genre") var genre: String = "",
     @get:PropertyName("upcoming") @set:PropertyName("upcoming") var upcoming: Boolean = false,
-    @get:PropertyName("featured") @set:PropertyName("featured") var featured: Boolean = false
+    @get:PropertyName("featured") @set:PropertyName("featured") var featured: Boolean = false,
+    @get:PropertyName("screenshots") @set:PropertyName("screenshots")
+    var screenshots: Map<String, String> = emptyMap(),
+    @get:PropertyName("downloadLinks") @set:PropertyName("downloadLinks")
+    var downloadLinks: Map<String, DownloadLink> = emptyMap()
 )
 
 @IgnoreExtraProperties

@@ -1,22 +1,17 @@
-# Android build artifacts
+# Android
 *.iml
 .gradle/
-/local.properties
-/.idea/
+local.properties
+.idea/
 .DS_Store
 build/
 captures/
 .externalNativeBuild/
 .cxx/
-
-# SECURITY — never commit these
-google-services.json
-*.keystore
+*.apk
+*.aab
 *.jks
-*.p12
-.env
-*.env.*
-local.properties
+*.keystore
 
-# Sensitive HTML (contains ad URLs and local config)
-**/assets/index_local.html
+# Sensitive Firebase config — add your own
+app/google-services.json

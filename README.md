@@ -1,30 +1,29 @@
 # AAMovies Admin — Native Android App
 
-Admin panel for Aamovies, built with native Kotlin + WebView bridge architecture.
+Admin panel for the AAMovies platform. Built with **100% native Android** (XML + Kotlin).
 
-## Architecture
-
-HTML files serve as the **UI layer only**. All logic runs natively in Kotlin:
-
-| Bridge | Registered Name | Responsibility |
-|--------|----------------|----------------|
-| AdminAuthBridge | `AndroidAuth` | Firebase Auth (whitelist-restricted) |
-| FCMSenderBridge | `AndroidFCM` | Send push notifications to all users |
-| AppBridge | `AndroidApp` | Toast, Share, platform info |
-
-## Security
-
-- Only whitelisted admin email can log in (enforced in Kotlin, not HTML)
-- `google-services.json` and keystores are never committed
-- FCM server key stored in environment variable only
+## Features
+- Add / Edit / Delete movies
+- Set title, year, category, genre, language, quality, description, poster URL
+- Toggle trending and pinned flags
+- Add screenshots (URLs) and download links
+- Type: Movie or Series
 
 ## Setup
 
-1. Clone repo
-2. Add your `google-services.json` to `app/`
-3. Set your keystore env vars (see Aamovies README)
-4. Open in Android Studio and build
+### 1. Firebase
+- Use the same Firebase project as the user app
+- Add an Android app with package name `com.aamovies.admin`
+- Download `google-services.json` and place it at `app/google-services.json`
 
-## Package
+### 2. Admin Whitelist
+The app checks that only whitelisted email addresses can access the admin panel.
+Edit the whitelist in `AdminAuthActivity.kt`.
 
-`com.aamovies.admin` | Min SDK 24 | Target SDK 34
+### 3. Build
+```bash
+./gradlew assembleRelease
+```
+
+## License
+MIT

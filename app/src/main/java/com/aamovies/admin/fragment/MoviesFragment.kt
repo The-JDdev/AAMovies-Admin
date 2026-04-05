@@ -38,7 +38,11 @@ class MoviesFragment : Fragment() {
         val btnAdd = view.findViewById<Button>(R.id.btn_add_movie)
 
         rvMovies.layoutManager = LinearLayoutManager(requireContext())
-        movieAdapter = AdminMovieAdapter(emptyList()) { movie -> confirmDelete(movie) }
+        movieAdapter = AdminMovieAdapter(
+            emptyList(),
+            onEditClick = { movie -> editMovie(movie) },
+            onDeleteClick = { movie -> confirmDelete(movie) }
+        )
         rvMovies.adapter = movieAdapter
 
         btnAdd.setOnClickListener {
@@ -56,11 +60,23 @@ class MoviesFragment : Fragment() {
                         m.id = child.key ?: return@forEach
                         movies.add(0, m)
                     }
-                    movieAdapter?.updateMovies(movies)
-                    tvEmpty.visibility = if (movies.isEmpty()) View.VISIBLE else View.GONE
+                    // Pinned movies at top
+                    val sorted = movies.sortedWith(
+                        compareByDescending<Movie> { it.pinned }
+                            .thenByDescending { it.trending }
+                    )
+                    movieAdapter?.updateMovies(sorted)
+                    tvEmpty.visibility = if (sorted.isEmpty()) View.VISIBLE else View.GONE
                 }
                 override fun onCancelled(error: DatabaseError) {}
             })
+    }
+
+    private fun editMovie(movie: Movie) {
+        val intent = Intent(requireContext(), AddMovieActivity::class.java).apply {
+            putExtra("movie_id", movie.id)
+        }
+        startActivity(intent)
     }
 
     private fun confirmDelete(movie: Movie) {

@@ -42,8 +42,53 @@
             android:ellipsize="end"
             android:layout_marginTop="4dp" />
 
+        <!-- Status badges row -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/tv_admin_trending_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔥 Trending"
+                android:textColor="@color/white"
+                android:background="#CCFF5722"
+                android:textSize="9sp"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="2dp"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tv_admin_pinned_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📌 Pinned"
+                android:textColor="@color/white"
+                android:background="#CC00a8ff"
+                android:textSize="9sp"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="2dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
+    <!-- Edit button -->
+    <TextView
+        android:id="@+id/btn_admin_edit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit"
+        android:textColor="@color/accent_blue"
+        android:textSize="13sp"
+        android:padding="8dp" />
+
+    <!-- Delete button -->
     <TextView
         android:id="@+id/btn_admin_delete"
         android:layout_width="wrap_content"
