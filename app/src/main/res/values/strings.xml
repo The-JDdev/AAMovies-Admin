@@ -2,4 +2,31 @@
 <resources>
     <string name="app_name">AAMovies Admin</string>
     <string name="notification_channel_name">AAMovies Admin Notifications</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_movies">Movies</string>
+    <string name="nav_categories">Categories</string>
+    <string name="nav_users">Users</string>
+    <string name="nav_send_notification">Send Notification</string>
+    <string name="nav_logout">Logout</string>
+    <string name="add_movie">Add Movie</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="movie_title">Movie Title *</string>
+    <string name="movie_year">Release Year *</string>
+    <string name="movie_category">Category *</string>
+    <string name="movie_language">Language</string>
+    <string name="movie_quality">Quality (e.g. HD, 4K)</string>
+    <string name="movie_poster">Poster Image URL</string>
+    <string name="movie_description">Description</string>
+    <string name="add_download_link">+ Add Download Link</string>
+    <string name="link_label">Label (e.g. HD 720p)</string>
+    <string name="link_url">Download URL</string>
+    <string name="link_size">File Size (e.g. 1.2 GB)</string>
+    <string name="send_notification_title">Notification Title</string>
+    <string name="send_notification_body">Notification Body</string>
+    <string name="send_to_all">Send to All Users</string>
+    <string name="admin_email_hint">admin@aamovies.com</string>
+    <string name="admin_password_hint">Enter password</string>
+    <string name="login_btn">Sign In</string>
 </resources>

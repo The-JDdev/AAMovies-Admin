@@ -1,177 +1,102 @@
 package com.aamovies.admin
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.KeyEvent
-import android.webkit.CookieManager
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
+import android.view.MenuItem
+import android.widget.TextView
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import com.aamovies.admin.bridge.AdminAuthBridge
-import com.aamovies.admin.bridge.AppBridge
-import com.aamovies.admin.bridge.FCMSenderBridge
-import com.aamovies.admin.services.MyFirebaseMessagingService
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.common.api.ApiException
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
+import com.aamovies.admin.fragment.CategoriesFragment
+import com.aamovies.admin.fragment.DashboardFragment
+import com.aamovies.admin.fragment.MoviesFragment
+import com.aamovies.admin.fragment.SendNotificationFragment
+import com.aamovies.admin.fragment.UsersFragment
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.messaging.FirebaseMessaging
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
-    lateinit var webView: WebView
-    val mainHandler = Handler(Looper.getMainLooper())
-    private var lastBackPressTime: Long = 0
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navView: NavigationView
+    private lateinit var auth: FirebaseAuth
+    private lateinit var prefs: SharedPreferences
 
-    private lateinit var adminAuthBridge: AdminAuthBridge
-    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
-
-    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        webView = findViewById(R.id.webView)
+        auth = FirebaseAuth.getInstance()
+        prefs = getSharedPreferences("admin_prefs", MODE_PRIVATE)
 
-        MyFirebaseMessagingService.subscribeIfNeeded(this)
+        val adminUid = prefs.getString("admin_uid", null)
+        if (adminUid == null || auth.currentUser == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
 
-        // Register Google Sign-In result handler
-        googleSignInLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                try {
-                    val account = task.getResult(ApiException::class.java)
-                    val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                    FirebaseAuth.getInstance().signInWithCredential(credential)
-                        .addOnSuccessListener { authResult ->
-                            val user = authResult.user!!
-                            // Verify admin access
-                            if (adminAuthBridge.isAdminEmail(user.email)) {
-                                val json = buildUserJson(user)
-                                evaluateJs("window.onAdminAuthSuccess($json)")
-                            } else {
-                                FirebaseAuth.getInstance().signOut()
-                                evaluateJs("window.onAdminAuthError('Access denied. Admin accounts only.')")
-                            }
-                        }
-                        .addOnFailureListener { e ->
-                            evaluateJs("window.onAdminAuthError('${escape(e.message)}')")
-                        }
-                } catch (e: ApiException) {
-                    evaluateJs("window.onAdminAuthError('Google sign-in failed: ${e.statusCode}')")
-                }
+        setContentView(R.layout.activity_admin_main)
+
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.admin_toolbar)
+        setSupportActionBar(toolbar)
+
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navView = findViewById(R.id.admin_nav_view)
+        navView.setNavigationItemSelectedListener(this)
+
+        val toggle = ActionBarDrawerToggle(
+            this, drawerLayout, toolbar,
+            R.string.nav_dashboard, R.string.nav_dashboard
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        val headerView = navView.getHeaderView(0)
+        val tvAdminEmail = headerView.findViewById<TextView>(R.id.tv_admin_email)
+        tvAdminEmail.text = auth.currentUser?.email ?: "Admin"
+
+        FirebaseMessaging.getInstance().subscribeToTopic("aamovies_admins")
+
+        if (savedInstanceState == null) {
+            loadFragment(DashboardFragment())
+            navView.setCheckedItem(R.id.nav_dashboard)
+            supportActionBar?.title = "Dashboard"
+        }
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_dashboard -> { loadFragment(DashboardFragment()); supportActionBar?.title = "Dashboard" }
+            R.id.nav_movies -> { loadFragment(MoviesFragment()); supportActionBar?.title = "Movies" }
+            R.id.nav_categories -> { loadFragment(CategoriesFragment()); supportActionBar?.title = "Categories" }
+            R.id.nav_users -> { loadFragment(UsersFragment()); supportActionBar?.title = "Users" }
+            R.id.nav_send_notification -> { loadFragment(SendNotificationFragment()); supportActionBar?.title = "Send Notification" }
+            R.id.nav_logout -> {
+                prefs.edit().remove("admin_uid").apply()
+                auth.signOut()
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
             }
         }
+        drawerLayout.closeDrawer(GravityCompat.START)
+        return true
+    }
 
-        // Instantiate bridges
-        adminAuthBridge = AdminAuthBridge(this, webView, mainHandler, googleSignInLauncher)
-        val fcmSender = FCMSenderBridge(this, webView, mainHandler)
-        val appBridge = AppBridge(this, webView, mainHandler)
+    private fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.admin_fragment_container, fragment)
+            .commit()
+    }
 
-        setupWebView(adminAuthBridge, fcmSender, appBridge)
-        loadApp()
-
-        FirebaseAuth.getInstance().addAuthStateListener { auth ->
-            val user = auth.currentUser
-            if (user != null && adminAuthBridge.isAdminEmail(user.email)) {
-                val json = buildUserJson(user)
-                evaluateJs("window.onAdminAuthStateChanged($json)")
-            } else {
-                evaluateJs("window.onAdminAuthStateChanged(null)")
-            }
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
         }
     }
-
-    @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView(vararg bridges: Any) {
-        webView.settings.apply {
-            javaScriptEnabled = true
-            domStorageEnabled = true
-            databaseEnabled = true
-            allowFileAccess = true
-            allowContentAccess = true
-            loadWithOverviewMode = true
-            useWideViewPort = true
-            builtInZoomControls = false
-            displayZoomControls = false
-            setSupportZoom(false)
-            mediaPlaybackRequiresUserGesture = false
-            mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-        }
-
-        CookieManager.getInstance().apply {
-            setAcceptCookie(true)
-            setAcceptThirdPartyCookies(webView, true)
-        }
-
-        webView.addJavascriptInterface(bridges[0], "AndroidAuth")      // AdminAuthBridge
-        webView.addJavascriptInterface(bridges[1], "AndroidFCM")       // FCMSenderBridge
-        webView.addJavascriptInterface(bridges[2], "AndroidApp")       // AppBridge
-
-        webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(
-                view: WebView, request: WebResourceRequest
-            ): Boolean {
-                val url = request.url.toString()
-                return if (url.startsWith("file://") || url.startsWith("about:")) false
-                else { view.loadUrl(url); true }
-            }
-        }
-
-        webView.webChromeClient = WebChromeClient()
-    }
-
-    private fun loadApp() {
-        if (isOnline()) webView.loadUrl("file:///android_asset/index.html")
-        else Toast.makeText(this, "No internet connection", Toast.LENGTH_LONG).show()
-    }
-
-    fun evaluateJs(script: String) {
-        mainHandler.post { webView.evaluateJavascript(script, null) }
-    }
-
-    private fun buildUserJson(user: com.google.firebase.auth.FirebaseUser): String {
-        return """{
-            "uid":"${user.uid}",
-            "email":"${user.email ?: ""}",
-            "displayName":"${escape(user.displayName)}",
-            "isAnonymous":${user.isAnonymous}
-        }"""
-    }
-
-    private fun escape(s: String?): String =
-        (s ?: "").replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
-
-    private fun isOnline(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val caps = cm.getNetworkCapabilities(cm.activeNetwork ?: return false) ?: return false
-        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (webView.canGoBack()) { webView.goBack(); return true }
-            val now = System.currentTimeMillis()
-            return if (now - lastBackPressTime < 2000) { finish(); true }
-            else { lastBackPressTime = now; Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show(); true }
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
-    override fun onResume() { super.onResume(); webView.onResume() }
-    override fun onPause() { super.onPause(); webView.onPause() }
-    override fun onDestroy() { webView.destroy(); super.onDestroy() }
 }

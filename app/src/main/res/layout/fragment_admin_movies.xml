@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_app"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/btn_add_movie"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="+ Add New Movie"
+        android:textColor="@color/white"
+        android:background="@drawable/bg_button_primary"
+        android:textSize="15sp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/tv_admin_movies_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No movies yet. Add your first movie!"
+        android:textColor="@color/text_secondary"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="32dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_admin_movies"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>
