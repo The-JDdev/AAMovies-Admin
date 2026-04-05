@@ -1,42 +1,30 @@
-# AAMovies Admin
+# AAMovies Admin — Native Android App
 
-Secure admin control panel for the AAMovies platform, powered by Firebase.
+Admin panel for Aamovies, built with native Kotlin + WebView bridge architecture.
 
-## Features
+## Architecture
 
-- Secure admin-only login
-- Movie management (Add/Edit/Delete with unlimited download links)
-- Category management
-- User management
-- Analytics dashboard
-- System settings
-- Firebase Realtime Database integration
+HTML files serve as the **UI layer only**. All logic runs natively in Kotlin:
 
-## Access
-
-- Only authorized admin accounts can access this panel
-- Login with admin credentials
-
-## Tech Stack
-
-- HTML5, CSS3, JavaScript (Vanilla)
-- Firebase (Auth, Realtime DB, Storage)
-- Font Awesome 6
-- Google Fonts (Inter)
-
-## Setup
-
-1. Clone repository
-2. Open `index.html` in a browser or serve via any web server
-3. Log in with your admin credentials
-4. Connect to your Firebase project
+| Bridge | Registered Name | Responsibility |
+|--------|----------------|----------------|
+| AdminAuthBridge | `AndroidAuth` | Firebase Auth (whitelist-restricted) |
+| FCMSenderBridge | `AndroidFCM` | Send push notifications to all users |
+| AppBridge | `AndroidApp` | Toast, Share, platform info |
 
 ## Security
 
-- Admin email verification on login
-- Firebase security rules enforced on backend
-- No sensitive data stored in client code
+- Only whitelisted admin email can log in (enforced in Kotlin, not HTML)
+- `google-services.json` and keystores are never committed
+- FCM server key stored in environment variable only
 
-## License
+## Setup
 
-© 2025 AAMovies. All rights reserved.
+1. Clone repo
+2. Add your `google-services.json` to `app/`
+3. Set your keystore env vars (see Aamovies README)
+4. Open in Android Studio and build
+
+## Package
+
+`com.aamovies.admin` | Min SDK 24 | Target SDK 34
