@@ -1,22 +1,22 @@
-# Sensitive files - DO NOT COMMIT
+# Android build artifacts
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# SECURITY — never commit these
 google-services.json
 *.keystore
 *.jks
-local.properties
+*.p12
 .env
-.env.*
+*.env.*
+local.properties
 
-# Firebase credentials
-firebase-adminsdk*.json
-serviceAccountKey.json
-
-# Build outputs
-build/
-*.apk
-*.aab
-
-# IDE files
-.idea/
-*.iml
-.DS_Store
-node_modules/
+# Sensitive HTML (contains ad URLs and local config)
+**/assets/index_local.html
