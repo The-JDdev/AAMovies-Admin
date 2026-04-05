@@ -1,5 +1,6 @@
 package com.aamovies.admin.bridge
 
+import com.aamovies.admin.R
 import android.content.Intent
 import android.os.Handler
 import android.webkit.JavascriptInterface
