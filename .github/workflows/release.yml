@@ -23,21 +23,25 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Install Android SDK components
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1 || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Decode keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > aamovies.keystore
+          ls -lh aamovies.keystore
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Build all distribution-split release APKs
         env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
           GRADLE_OPTS: "-Xmx3g -XX:MaxMetaspaceSize=512m"
         run: |
-          ./gradlew assembleRelease --max-workers 2 --no-daemon 2>&1
+          ./gradlew assembleRelease --max-workers 2 --no-daemon
 
       - name: Collect APKs
         run: |
@@ -48,6 +52,9 @@ jobs:
               label="${flavor}"
               if [ "$flavor" = "galaxy" ]; then label="samsung"; fi
               cp "$src" "release-apks/AAMovies-Admin-${{ github.event.inputs.tag }}-${label}.apk"
+              echo "Collected: release-apks/AAMovies-Admin-${{ github.event.inputs.tag }}-${label}.apk"
+            else
+              echo "WARNING: $src not found"
             fi
           done
           ls -lh release-apks/
@@ -56,13 +63,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete ${{ github.event.inputs.tag }} --yes 2>/dev/null || true
+          gh release delete "${{ github.event.inputs.tag }}" --yes 2>/dev/null || true
+          git push origin --delete "refs/tags/${{ github.event.inputs.tag }}" 2>/dev/null || true
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ github.event.inputs.tag }} \
+          gh release create "${{ github.event.inputs.tag }}" \
             --title "AAMovies Admin ${{ github.event.inputs.tag }}" \
             --notes "## AAMovies Admin ${{ github.event.inputs.tag }}
 
