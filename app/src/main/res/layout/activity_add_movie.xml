@@ -164,6 +164,87 @@
             android:padding="14dp"
             android:layout_marginBottom="14dp" />
 
+        <!-- Horizontal Banner URL (NEW) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Horizontal Banner URL"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/et_movie_banner"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_input_field"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:hint="https://example.com/banner.jpg (wide banner for detail screen)"
+            android:inputType="textUri"
+            android:padding="14dp"
+            android:layout_marginBottom="14dp" />
+
+        <!-- Industry (NEW) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Industry"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/et_movie_industry"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_input_field"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:hint="e.g. Bollywood, Hollywood, Tollywood"
+            android:padding="14dp"
+            android:layout_marginBottom="14dp" />
+
+        <!-- Rating (NEW) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rating"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/et_movie_rating"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_input_field"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:hint="e.g. 8.5/10 or PG-13"
+            android:padding="14dp"
+            android:layout_marginBottom="14dp" />
+
+        <!-- Star Cast (NEW) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Star Cast"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/et_movie_star_cast"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_input_field"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:hint="e.g. Shah Rukh Khan, Deepika Padukone"
+            android:padding="14dp"
+            android:layout_marginBottom="14dp" />
+
         <!-- Description -->
         <TextView
             android:layout_width="wrap_content"
@@ -184,7 +265,7 @@
             android:inputType="textMultiLine"
             android:gravity="top"
             android:padding="14dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="14dp" />
 
         <!-- Genre -->
         <TextView

@@ -12,6 +12,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.aamovies.admin.fragment.CategoriesFragment
 import com.aamovies.admin.fragment.DashboardFragment
+import com.aamovies.admin.fragment.GlobalSettingsFragment
 import com.aamovies.admin.fragment.MoviesFragment
 import com.aamovies.admin.fragment.SendNotificationFragment
 import com.aamovies.admin.fragment.UsersFragment
@@ -75,6 +76,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_categories -> { loadFragment(CategoriesFragment()); supportActionBar?.title = "Categories" }
             R.id.nav_users -> { loadFragment(UsersFragment()); supportActionBar?.title = "Users" }
             R.id.nav_send_notification -> { loadFragment(SendNotificationFragment()); supportActionBar?.title = "Send Notification" }
+            R.id.nav_settings -> { loadFragment(GlobalSettingsFragment()); supportActionBar?.title = "Global Settings" }
             R.id.nav_logout -> {
                 prefs.edit().remove("admin_uid").apply()
                 auth.signOut()

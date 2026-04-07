@@ -27,6 +27,10 @@ class AddMovieActivity : AppCompatActivity() {
     private lateinit var etLanguage: EditText
     private lateinit var etQuality: EditText
     private lateinit var etPoster: EditText
+    private lateinit var etBanner: EditText
+    private lateinit var etIndustry: EditText
+    private lateinit var etRating: EditText
+    private lateinit var etStarCast: EditText
     private lateinit var etDescription: EditText
     private lateinit var etGenre: EditText
     private lateinit var cbTrending: CheckBox
@@ -40,6 +44,8 @@ class AddMovieActivity : AppCompatActivity() {
     private val categorySpinnerList = mutableListOf("Uncategorized")
     private var editMovieId: String? = null
     private var isEditMode = false
+    private var existingTrendingOrder: Long = 0
+    private var existingPinnedOrder: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +69,10 @@ class AddMovieActivity : AppCompatActivity() {
         etLanguage = findViewById(R.id.et_movie_language)
         etQuality = findViewById(R.id.et_movie_quality)
         etPoster = findViewById(R.id.et_movie_poster)
+        etBanner = findViewById(R.id.et_movie_banner)
+        etIndustry = findViewById(R.id.et_movie_industry)
+        etRating = findViewById(R.id.et_movie_rating)
+        etStarCast = findViewById(R.id.et_movie_star_cast)
         etDescription = findViewById(R.id.et_movie_description)
         etGenre = findViewById(R.id.et_movie_genre)
         cbTrending = findViewById(R.id.cb_trending)
@@ -76,7 +86,7 @@ class AddMovieActivity : AppCompatActivity() {
         loadCategories()
 
         btnAddScreenshot.setOnClickListener { addScreenshotRow("") }
-        btnAddLink.setOnClickListener { addDownloadLinkRow("", "", "") }
+        btnAddLink.setOnClickListener { addDownloadLinkRow("", "", "", "") }
         btnSave.setOnClickListener { saveMovie() }
 
         if (isEditMode) loadExistingMovie(editMovieId!!)
@@ -109,6 +119,10 @@ class AddMovieActivity : AppCompatActivity() {
                 etLanguage.setText(snap.child("language").getValue(String::class.java) ?: "")
                 etQuality.setText(snap.child("quality").getValue(String::class.java) ?: "")
                 etPoster.setText(snap.child("poster").getValue(String::class.java) ?: "")
+                etBanner.setText(snap.child("horizontalBanner").getValue(String::class.java) ?: "")
+                etIndustry.setText(snap.child("industry").getValue(String::class.java) ?: "")
+                etRating.setText(snap.child("rating").getValue(String::class.java) ?: "")
+                etStarCast.setText(snap.child("starCast").getValue(String::class.java) ?: "")
                 etDescription.setText(snap.child("description").getValue(String::class.java) ?: "")
                 etGenre.setText(snap.child("genre").getValue(String::class.java) ?: "")
 
@@ -118,24 +132,27 @@ class AddMovieActivity : AppCompatActivity() {
                 cbTrending.isChecked = snap.child("trending").getValue(Boolean::class.java) ?: false
                 cbPinned.isChecked = snap.child("pinned").getValue(Boolean::class.java) ?: false
 
+                // Preserve existing LIFO ordering values
+                existingTrendingOrder = snap.child("trendingOrder").getValue(Long::class.java) ?: 0L
+                existingPinnedOrder = snap.child("pinnedOrder").getValue(Long::class.java) ?: 0L
+
                 val category = snap.child("category").getValue(String::class.java) ?: "Uncategorized"
                 val catIdx = categorySpinnerList.indexOf(category)
                 if (catIdx >= 0) spinnerCategory.setSelection(catIdx)
 
-                // Load screenshots
                 llScreenshots.removeAllViews()
                 snap.child("screenshots").children.forEach { sc ->
                     val url = sc.getValue(String::class.java) ?: ""
                     addScreenshotRow(url)
                 }
 
-                // Load download links
                 llDownloadLinks.removeAllViews()
                 snap.child("downloadLinks").children.forEach { dl ->
                     val label = dl.child("label").getValue(String::class.java) ?: ""
                     val url = dl.child("url").getValue(String::class.java) ?: ""
                     val size = dl.child("size").getValue(String::class.java) ?: ""
-                    addDownloadLinkRow(label, url, size)
+                    val resolution = dl.child("resolution").getValue(String::class.java) ?: ""
+                    addDownloadLinkRow(label, url, size, resolution)
                 }
             }
             .addOnFailureListener { btnSave.isEnabled = true }
@@ -176,12 +193,14 @@ class AddMovieActivity : AppCompatActivity() {
         llScreenshots.addView(row)
     }
 
-    private fun addDownloadLinkRow(existingLabel: String, existingUrl: String, existingSize: String) {
+    private fun addDownloadLinkRow(existingLabel: String, existingUrl: String, existingSize: String, existingResolution: String) {
         val inflater = LayoutInflater.from(this)
         val row = inflater.inflate(R.layout.item_download_link_input, llDownloadLinks, false)
         row.findViewById<EditText>(R.id.et_link_label).setText(existingLabel)
         row.findViewById<EditText>(R.id.et_link_url).setText(existingUrl)
         row.findViewById<EditText>(R.id.et_link_size).setText(existingSize)
+        // Set resolution if the field exists
+        row.findViewById<EditText?>(R.id.et_link_resolution)?.setText(existingResolution)
         row.findViewById<Button>(R.id.btn_remove_link).setOnClickListener { llDownloadLinks.removeView(row) }
         llDownloadLinks.addView(row)
     }
@@ -195,7 +214,22 @@ class AddMovieActivity : AppCompatActivity() {
         if (title.isEmpty()) { Toast.makeText(this, "Title is required", Toast.LENGTH_SHORT).show(); return }
         if (year.isEmpty()) { Toast.makeText(this, "Year is required", Toast.LENGTH_SHORT).show(); return }
 
-        // Collect screenshots
+        // LIFO trendingOrder: set to currentTimeMillis when newly enabled, preserve if already set, clear if disabled
+        val trendingChecked = cbTrending.isChecked
+        val trendingOrder: Long = when {
+            !trendingChecked -> 0L
+            existingTrendingOrder > 0 -> existingTrendingOrder
+            else -> System.currentTimeMillis()
+        }
+
+        // LIFO pinnedOrder: same logic
+        val pinnedChecked = cbPinned.isChecked
+        val pinnedOrder: Long = when {
+            !pinnedChecked -> 0L
+            existingPinnedOrder > 0 -> existingPinnedOrder
+            else -> System.currentTimeMillis()
+        }
+
         val screenshots = mutableMapOf<String, String>()
         for (i in 0 until llScreenshots.childCount) {
             val row = llScreenshots.getChildAt(i) as? LinearLayout ?: continue
@@ -203,15 +237,17 @@ class AddMovieActivity : AppCompatActivity() {
             if (url.isNotEmpty()) screenshots["ss${i + 1}"] = url
         }
 
-        // Collect download links
         val downloadLinks = mutableMapOf<String, Map<String, String>>()
         for (i in 0 until llDownloadLinks.childCount) {
             val row = llDownloadLinks.getChildAt(i)
             val label = row.findViewById<EditText>(R.id.et_link_label).text.toString().trim()
             val url = row.findViewById<EditText>(R.id.et_link_url).text.toString().trim()
             val size = row.findViewById<EditText>(R.id.et_link_size).text.toString().trim()
+            val resolution = row.findViewById<EditText?>(R.id.et_link_resolution)?.text?.toString()?.trim() ?: ""
             if (url.isNotEmpty()) {
-                downloadLinks["link${i + 1}"] = mapOf("label" to label, "url" to url, "size" to size)
+                downloadLinks["link${i + 1}"] = mapOf(
+                    "label" to label, "url" to url, "size" to size, "resolution" to resolution
+                )
             }
         }
 
@@ -223,10 +259,16 @@ class AddMovieActivity : AppCompatActivity() {
             "language" to etLanguage.text.toString().trim(),
             "quality" to etQuality.text.toString().trim(),
             "poster" to etPoster.text.toString().trim(),
+            "horizontalBanner" to etBanner.text.toString().trim(),
+            "industry" to etIndustry.text.toString().trim(),
+            "rating" to etRating.text.toString().trim(),
+            "starCast" to etStarCast.text.toString().trim(),
             "description" to etDescription.text.toString().trim(),
             "genre" to etGenre.text.toString().trim(),
-            "trending" to cbTrending.isChecked,
-            "pinned" to cbPinned.isChecked,
+            "trending" to trendingChecked,
+            "trendingOrder" to trendingOrder,
+            "pinned" to pinnedChecked,
+            "pinnedOrder" to pinnedOrder,
             "upcoming" to false,
             "featured" to false,
             "screenshots" to screenshots,
@@ -237,7 +279,6 @@ class AddMovieActivity : AppCompatActivity() {
         val db = FirebaseDatabase.getInstance().getReference("movies")
 
         if (isEditMode && editMovieId != null) {
-            // Preserve original createdAt
             db.child(editMovieId!!).child("createdAt").get().addOnSuccessListener { snap ->
                 val createdAt = snap.getValue(Long::class.java) ?: System.currentTimeMillis()
                 movieData["createdAt"] = createdAt
