@@ -51,5 +51,6 @@ data class Category(
 @IgnoreExtraProperties
 data class GlobalSettings(
     @get:PropertyName("telegramLink") @set:PropertyName("telegramLink") var telegramLink: String = "",
-    @get:PropertyName("facebookLink") @set:PropertyName("facebookLink") var facebookLink: String = ""
+    @get:PropertyName("facebookLink") @set:PropertyName("facebookLink") var facebookLink: String = "",
+    @get:PropertyName("fcmServerKey") @set:PropertyName("fcmServerKey") var fcmServerKey: String = ""
 )

@@ -23,7 +23,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     companion object {
         private const val TAG = "AdminFCM"
-        private const val TOPIC = "aamovies_all_users"
+        private const val TOPIC = "new_movies"
         private const val CHANNEL_ID = "aamovies_admin_notifications"
         private const val PREFS_NAME = "aamovies_admin_prefs"
         private const val KEY_SUBSCRIBED = "fcm_subscribed"

@@ -14,6 +14,7 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.aamovies.admin.util.FcmSender
 import com.google.firebase.database.FirebaseDatabase
 
 class AddMovieActivity : AppCompatActivity() {
@@ -297,6 +298,15 @@ class AddMovieActivity : AppCompatActivity() {
             db.push().setValue(movieData)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Movie added successfully!", Toast.LENGTH_SHORT).show()
+                    // Send FCM push notification to all users
+                    val posterUrl = etPoster.text.toString().trim()
+                    FirebaseDatabase.getInstance().getReference("settings/global/fcmServerKey")
+                        .get().addOnSuccessListener { snap ->
+                            val key = snap.getValue(String::class.java) ?: ""
+                            if (key.isNotEmpty()) {
+                                FcmSender.sendNewMovieNotification(title, posterUrl, key)
+                            }
+                        }
                     finish()
                 }
                 .addOnFailureListener { e ->

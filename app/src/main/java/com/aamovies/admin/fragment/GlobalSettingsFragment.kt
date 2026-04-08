@@ -24,12 +24,12 @@ class GlobalSettingsFragment : Fragment() {
 
         val etTelegram = view.findViewById<EditText>(R.id.et_telegram_link)
         val etFacebook = view.findViewById<EditText>(R.id.et_facebook_link)
+        val etFcmKey = view.findViewById<EditText>(R.id.et_fcm_server_key)
         val btnSave = view.findViewById<Button>(R.id.btn_save_settings)
         val tvStatus = view.findViewById<TextView>(R.id.tv_settings_status)
 
         val ref = FirebaseDatabase.getInstance().getReference("settings/global")
 
-        // Load existing settings
         btnSave.isEnabled = false
         ref.get().addOnSuccessListener { snap ->
             if (!isAdded) return@addOnSuccessListener
@@ -37,6 +37,7 @@ class GlobalSettingsFragment : Fragment() {
             val settings = snap.getValue(GlobalSettings::class.java) ?: GlobalSettings()
             etTelegram.setText(settings.telegramLink)
             etFacebook.setText(settings.facebookLink)
+            etFcmKey.setText(settings.fcmServerKey)
         }.addOnFailureListener {
             btnSave.isEnabled = true
         }
@@ -44,7 +45,8 @@ class GlobalSettingsFragment : Fragment() {
         btnSave.setOnClickListener {
             val settings = GlobalSettings(
                 telegramLink = etTelegram.text.toString().trim(),
-                facebookLink = etFacebook.text.toString().trim()
+                facebookLink = etFacebook.text.toString().trim(),
+                fcmServerKey = etFcmKey.text.toString().trim()
             )
             btnSave.isEnabled = false
             ref.setValue(settings)

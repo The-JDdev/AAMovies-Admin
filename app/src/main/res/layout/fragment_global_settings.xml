@@ -69,6 +69,35 @@
             android:padding="14dp"
             android:layout_marginBottom="24dp" />
 
+        <!-- FCM Server Key -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FCM Server Key (for push notifications)"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/et_fcm_server_key"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/bg_input_field"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:hint="AAAA... (Firebase Console → Project Settings → Cloud Messaging)"
+            android:inputType="textVisiblePassword"
+            android:padding="14dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Used to send push notifications when a new movie is added."
+            android:textColor="@color/text_hint"
+            android:textSize="11sp"
+            android:layout_marginBottom="20dp" />
+
         <Button
             android:id="@+id/btn_save_settings"
             android:layout_width="match_parent"
